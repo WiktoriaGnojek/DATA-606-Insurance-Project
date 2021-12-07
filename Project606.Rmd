@@ -1,0 +1,155 @@
+---
+title: "Project 606"
+author: Wiktoria Gnojek
+output:
+  pdf_document: default
+  html_notebook: default
+  word_document: default
+---
+**Medical Cost Prediction Analysis**
+
+**Abstract**
+
+Insurance costs vary based on personalized variables. Beneficiaries are charged based on physical, personal, and geographical factors. The research conducted is based on a Kaggle dataset that was taken and transformed from Machine Learning with R by Brett Lantz. The data set contains 1,338 cases which appear to be recorded, making this an observational study. The data can be found using this link; https://www.kaggle.com/mirichoi0218/insurance. 
+
+For reproductive purposes, one can also find a CSV file of the data within this GitHub repository; https://github.com/WiktoriaGnojek/DATA-606-Insurance-Project/blob/main/insurance.csv. 
+The data set contains both categorical and numerical variables. The response variable is labeled “charges” and is numerical. “Charges” are defined as individual medical costs billed by health insurance. The explanatory variable(s) range from age to region and are composed of both numerical and categorical variables. 
+
+To test the hypothesis, a set of ggplot as well as statistical testing code will be used. For integer variables, I used a scatter plot with a regression line to visualize the relationship. I also used the cor.test function for t-testing, p-value, and coefficient. For character variables I constructed boxplots to see whether there was significant differences within the specific variable. 
+
+**Research Question** 
+
+The posed question, also asked by the data set is; "Can you accurately predict insurance costs?"
+
+HO = You can accurately predict insurance costs based on individual variables.
+HA = You cannot accurately predict insurance costs based on individual variables. 
+
+**Column Key and What Each Represents**
+
+Dependent and Independent Variable(s):
+
+Age: age of primary beneficiary
+
+Sex: insurance contractor gender, female, male
+
+BMI: Body mass index, providing an understanding of body, weights that are relatively high or low relative to height,
+objective index of body weight (kg / m ^ 2) using the ratio of height to weight, ideally 18.5 to 24.9
+
+Children: Number of children covered by health insurance / Number of dependents
+
+Smoker: Smoking
+
+Region: the beneficiary's residential area in the US, northeast, southeast, southwest, northwest.
+
+Charges: Individual medical costs billed by health insurance
+
+**Summary Statistics & Approach:**
+
+```{r}
+## read main csv file
+insurance <- read.csv("https://raw.githubusercontent.com/WiktoriaGnojek/DATA-606-Insurance-Project/main/insurance.csv")
+library(dplyr)
+glimpse(insurance)
+```
+
+```{r}
+## assign "charges" & "bmi" column as int 
+insurance$charges <- as.integer(insurance$charges) 
+insurance$bmi <- as.integer(insurance$bmi) 
+head(insurance)
+```
+
+**Response Variable Distribution**
+```{r}
+## histogram of charges to show distribution of insurance cost so that we understand the range of our data 
+hist(insurance$charges,
+     main="Individual Medical Costs Billed by Health Insurance
+     mean = 13270.42", 
+     xlab="Cost Billed", 
+     border="black", 
+     col="red")
+mean(insurance$charges)
+sd(insurance$charges)
+```
+
+The data appears to be right skewed and has a unimodal distribution. This tells us that majority of the medical costs within the data set are between 0 and 20000. This is confirmed by the mean. As cost increases we continue to see a decrease in frequency. There are a few outliers around the 40000 cost, but they aren’t significant. 
+
+```{r}
+## relationships between the columns
+## do some tidying and transformations
+## pick maybe 2-3 columns that are important
+library(tidyverse)
+insurance_bmi <- insurance %>%    ## bmi focused
+  select(age, sex, bmi, charges)
+insurance_smoker <- insurance %>%   #smoker focused
+  select(age, sex, smoker, charges)
+insurance_region <- insurance %>%   #region focused
+  select(age, sex, region, charges)
+```
+
+To test my hypothesis I focused on three variables within the data set. 
+
+The first being BMI which is a representation of a person's body mass. The average healthy BMI is 18.5 to 24.9. The main reason BMI was chosen to test my hypothesis was to examine whether being over or underweight is a significant factor in policy charge. 
+
+The second variable focuses on whether the beneficiary is a smoker or not. Smoker status can possibly cause a fluctuation in policy charge due to the health risks associated with the act. 
+
+The third and final variable is a person's geographical region within the US. Prices can vary from region to region based on factors such as region required benefits. 
+
+**Statistic Output:**
+
+Variable Based
+```{r}
+library(ggplot2)
+ggplot(aes(x=charges,y=bmi), data=insurance_bmi) +
+  ggtitle("Charges ~ Bmi") +
+  geom_point() +
+  geom_smooth(method = "lm") # regression line
+cor.test(insurance_bmi$bmi, insurance_bmi$charges)
+#null hypothesis is rejected, 
+scatter.smooth(x=insurance_bmi$charges, y=insurance_bmi$bmi, main="Charges ~ Bmi")
+```
+
+We reject the null hypothesis, thus concurring not strong enough of a relationship.This is also proven by the cor being close to 0.2, insinuating that the relationship is positive but likely weak and unimportant. 
+
+Character Based
+```{r}
+## smoker focused
+boxplot(charges~smoker,data=insurance_smoker, 
+   xlab = "Smoker",
+   ylab = "Charges", 
+   main = "Difference in Insurance Charges Based on Smoker Status",
+   col = c("darksalmon", "darkred"))
+## gender focused
+boxplot(charges~sex, data=insurance_smoker,
+   xlab = "Gender",
+   ylab = "Charges", 
+   main = "Difference in Insurance Charges Based on Gender",
+   col = c("pink", "cornflowerblue"))
+## region focused
+boxplot(charges~region, data = insurance_region,
+   xlab = "Region(s)",
+   ylab = "Charges", 
+   main = "Difference in Insurance Charges Based on Regions",
+   col = c("darkseagreen2", "darkseagreen3", "darkseagreen4", "forestgreen"))
+```
+
+We can conclude that there is a relationship between smoker status and charges. 
+
+Speaking in terms of median, there is no relationship between costs gender wise. But, we can assume that there are instances where males do have a higher charge rate due to max whisker and outliers. 
+
+Median and quartile wise the relationship between regions isn’t significantly impactful. But, we can assume that the southeast is the most likely to have higher charges due to whiskers and outliers. 
+
+**Conclusion:**
+
+The research presented an outcome that was not initially expected. Aside from smoker status, there was not enough evidence to confidently support the null hypothesis. 
+
+Furthermore, if we divide the population by smoker status we will not be able to make further significant conclusions based on other personal factors like gender, region, or BMI. 
+
+Some research errors could have included sampling, population specification, or researcher error. Because I did not collect the data myself I was not in control of how the sample was created. This could have resulted in a sample that was biased or flawed, which would not accurately represent the entire population. 
+
+
+
+
+
+
+
